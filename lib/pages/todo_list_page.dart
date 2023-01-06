@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TodoListPage extends StatelessWidget {
-  TodoListPage({super.key});
-
-  final TextEditingController emailController = TextEditingController();
+  const TodoListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,20 +10,75 @@ class TodoListPage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('ToDo List'),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(
-                  labelText: 'ToDo',
-                ),
-                onChanged: onChanged,
-                onSubmitted: onSubmitted,
+              Row(
+                // mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Add a new ToDo',
+                        hintText: 'Enter a ToDo',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF0000),
+                      fixedSize: const Size(48, 48),
+                      padding: const EdgeInsets.all(12),
+                    ),
+                    child: const Icon(
+                      Icons.add,
+                      size: 30,
+                    ),
+                  ),
+                ],
               ),
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text('Add'),
+              const SizedBox(height: 16),
+              ListView(
+                shrinkWrap: true,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.check_box_outline_blank),
+                    title: const Text('ToDo 1'),
+                    subtitle: const Text('05/01/2023'),
+                    trailing: const Icon(Icons.delete),
+                    onTap: () {},
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.check_box_outline_blank),
+                    title: const Text('ToDo 2'),
+                    subtitle: const Text('05/01/2023'),
+                    trailing: const Icon(Icons.delete),
+                    onTap: () {},
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'You have 0 pending ToDo',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF0000),
+                      padding: const EdgeInsets.all(16),
+                    ),
+                    child: const Text(
+                      'Clear All',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -33,14 +86,4 @@ class TodoListPage extends StatelessWidget {
       ),
     );
   }
-
-  void login() {
-    final String email = emailController.text;
-    debugPrint(email);
-    emailController.text = 'Reset';
-  }
-
-  void onChanged(String text) {}
-
-  void onSubmitted(String text) {}
 }
