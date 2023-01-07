@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:todo_app/models/todo.dart';
+import 'package:todo_app/widgets/todo_list_item.dart';
 
 class TodoListPage extends StatefulWidget {
   const TodoListPage({super.key});
@@ -10,14 +12,16 @@ class TodoListPage extends StatefulWidget {
 class _TodoListPageState extends State<TodoListPage> {
   final TextEditingController todoController = TextEditingController();
 
-  final List<String> todos = [];
+  final List<Todo> todos = [];
+  Todo? deletedTodo;
+  int? deletedTodoIndex;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -33,7 +37,12 @@ class _TodoListPageState extends State<TodoListPage> {
                       ),
                       onSubmitted: (String text) {
                         setState(() {
-                          todos.add(text);
+                          todos.add(
+                            Todo(
+                              title: text,
+                              date: DateTime.now(),
+                            ),
+                          );
                         });
                         todoController.clear();
                       },
@@ -44,7 +53,12 @@ class _TodoListPageState extends State<TodoListPage> {
                     onPressed: () {
                       String text = todoController.text;
                       setState(() {
-                        todos.add(text);
+                        todos.add(
+                          Todo(
+                            title: text,
+                            date: DateTime.now(),
+                          ),
+                        );
                       });
                       todoController.clear();
                     },
@@ -65,16 +79,12 @@ class _TodoListPageState extends State<TodoListPage> {
                 child: ListView(
                   shrinkWrap: true,
                   children: [
-                    for (String todo in todos)
-                      ListTile(
-                        title: Text(
-                          todo,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Color(0xFF000000),
-                          ),
-                        ),
-                        onTap: () {},
+                    for (Todo todo in todos)
+                      TodoListItem(
+                        todo: todo,
+                        onDelete: (Todo todo) {
+                          onDelete(todo);
+                        },
                       ),
                   ],
                 ),
@@ -82,14 +92,14 @@ class _TodoListPageState extends State<TodoListPage> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'You have 0 pending ToDo',
+                      'You have ${todos.length} pending Todo',
                     ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: showDeleteTodosConfirmationDialog,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF0000),
                       padding: const EdgeInsets.all(16),
@@ -105,5 +115,84 @@ class _TodoListPageState extends State<TodoListPage> {
         ),
       ),
     );
+  }
+
+  void onDelete(Todo todo) {
+    deletedTodo = todo;
+    deletedTodoIndex = todos.indexOf(todo);
+
+    setState(() {
+      todos.remove(todo);
+    });
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 4),
+        backgroundColor: Colors.white,
+        content: Text(
+          "ToDo '${todo.title}' deleted",
+          style: TextStyle(
+            color: Colors.grey[800],
+          ),
+        ),
+        action: SnackBarAction(
+          label: 'Undo',
+          textColor: const Color(0xFFFF0000),
+          onPressed: () {
+            todos.insert(
+              deletedTodoIndex as int,
+              deletedTodo as Todo,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void showDeleteTodosConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Clear All'),
+          content: const Text('Are you sure you want to clear all ToDos?'),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey[800],
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                deleteAllTodos();
+              },
+              child: const Text(
+                'Clear',
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void deleteAllTodos() {
+    setState(() {
+      todos.clear();
+    });
   }
 }
