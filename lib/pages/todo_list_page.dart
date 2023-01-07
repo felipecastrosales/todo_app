@@ -63,8 +63,8 @@ class _TodoListPageState extends State<TodoListPage> {
                       todoController.clear();
                     },
                     style: ElevatedButton.styleFrom(
+                      alignment: Alignment.center,
                       backgroundColor: const Color(0xFFFF0000),
-                      fixedSize: const Size(48, 48),
                       padding: const EdgeInsets.all(12),
                     ),
                     child: const Icon(
