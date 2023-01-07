@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app/models/todo.dart';
+import 'package:todo_app/repositories/todo_repository.dart';
 import 'package:todo_app/widgets/todo_list_item.dart';
 
 class TodoListPage extends StatefulWidget {
@@ -10,107 +11,115 @@ class TodoListPage extends StatefulWidget {
 }
 
 class _TodoListPageState extends State<TodoListPage> {
+  final TodoRepository todoRepository = TodoRepository();
   final TextEditingController todoController = TextEditingController();
-
   final List<Todo> todos = [];
+
   Todo? deletedTodo;
   int? deletedTodoIndex;
+  String? errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    todoRepository.getTodoList().then((List<Todo> value) {
+      setState(() {
+        value = todos;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: todoController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Add a new ToDo',
-                        hintText: 'Enter a ToDo',
-                      ),
-                      onSubmitted: (String text) {
-                        setState(() {
-                          todos.add(
-                            Todo(
-                              title: text,
-                              date: DateTime.now(),
-                            ),
-                          );
-                        });
-                        todoController.clear();
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      String text = todoController.text;
-                      setState(() {
-                        todos.add(
-                          Todo(
-                            title: text,
-                            date: DateTime.now(),
-                          ),
-                        );
-                      });
-                      todoController.clear();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      alignment: Alignment.center,
-                      backgroundColor: const Color(0xFFFF0000),
-                      padding: const EdgeInsets.all(12),
-                    ),
-                    child: const Icon(
-                      Icons.add,
-                      size: 30,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
+      resizeToAvoidBottomInset: false,
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
                   children: [
-                    for (Todo todo in todos)
-                      TodoListItem(
-                        todo: todo,
-                        onDelete: (Todo todo) {
-                          onDelete(todo);
+                    Expanded(
+                      child: TextField(
+                        controller: todoController,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: 'Add a new ToDo',
+                          hintText: 'Enter a ToDo',
+                          errorText: errorText,
+                          labelStyle: const TextStyle(
+                            color: Color(0xFFFF0000),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0xFFFF0000),
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        onSubmitted: (String text) {
+                          addTodo;
                         },
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: addTodo,
+                      style: ElevatedButton.styleFrom(
+                        alignment: Alignment.center,
+                        backgroundColor: const Color(0xFFFF0000),
+                        padding: const EdgeInsets.all(12),
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        size: 30,
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'You have ${todos.length} pending Todo',
-                    ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: ListView(
+                    reverse: true,
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    children: [
+                      for (Todo todo in todos)
+                        TodoListItem(
+                          todo: todo,
+                          onDelete: (Todo todo) {
+                            onDelete(todo);
+                          },
+                        ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: showDeleteTodosConfirmationDialog,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF0000),
-                      padding: const EdgeInsets.all(16),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'You have ${todos.length} pending Todo',
+                      ),
                     ),
-                    child: const Text(
-                      'Clear All',
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: showDeleteTodosConfirmationDialog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF0000),
+                        padding: const EdgeInsets.all(16),
+                      ),
+                      child: const Text(
+                        'Clear All',
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -124,6 +133,7 @@ class _TodoListPageState extends State<TodoListPage> {
     setState(() {
       todos.remove(todo);
     });
+    todoRepository.saveTodoList(todos);
 
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -144,6 +154,9 @@ class _TodoListPageState extends State<TodoListPage> {
               deletedTodoIndex as int,
               deletedTodo as Todo,
             );
+            setState(() {
+              todoRepository.saveTodoList(todos);
+            });
           },
         ),
       ),
@@ -194,5 +207,27 @@ class _TodoListPageState extends State<TodoListPage> {
     setState(() {
       todos.clear();
     });
+    todoRepository.saveTodoList(todos);
+  }
+
+  void addTodo() {
+    String text = todoController.text;
+    if (text.isEmpty) {
+      setState(() {
+        errorText = 'Please enter a ToDo';
+      });
+      return;
+    }
+    setState(() {
+      todos.add(
+        Todo(
+          title: text,
+          dateTime: DateTime.now(),
+        ),
+      );
+      errorText = null;
+    });
+    todoController.clear();
+    todoRepository.saveTodoList(todos);
   }
 }

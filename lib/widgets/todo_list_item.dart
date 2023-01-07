@@ -52,7 +52,7 @@ class TodoListItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                DateFormat('dd/MMM/yyyy - HH:mm').format(todo.date),
+                DateFormat('dd/MMM/yyyy - HH:mm').format(todo.dateTime),
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.grey,
