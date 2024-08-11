@@ -11,16 +11,17 @@ class TodoRepository {
 
   Future<List<Todo>> getTodoList() async {
     sharedPreferences = await SharedPreferences.getInstance();
-    final String jsonString = sharedPreferences.getString(todoListKey) ?? '[]';
-    final List jsonDecoded = json.decode(jsonString) as List;
-    final List<Todo> todos = jsonDecoded.map((e) => Todo.fromJson(e)).toList();
+    final jsonString = sharedPreferences.getString(todoListKey) ?? '[]';
+    final jsonDecoded = json.decode(jsonString) as List;
+    final todos = jsonDecoded.map((e) => Todo.fromJson(e)).toList();
     debugPrint('todos: $todos');
     final orderedTodos = todos.reversed.toList();
+
     return orderedTodos;
   }
 
   void saveTodoList(List<Todo> todos) {
-    final String jsonString = json.encode(todos);
+    final jsonString = json.encode(todos);
     sharedPreferences.setString(todoListKey, jsonString);
     debugPrint('jsonString: $jsonString');
   }

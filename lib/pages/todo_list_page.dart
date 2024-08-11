@@ -11,9 +11,9 @@ class TodoListPage extends StatefulWidget {
 }
 
 class _TodoListPageState extends State<TodoListPage> {
-  final TodoRepository todoRepository = TodoRepository();
-  final TextEditingController todoController = TextEditingController();
-  final List<Todo> todos = [];
+  final todoRepository = TodoRepository();
+  final todoController = TextEditingController();
+  final todos = <Todo>[];
 
   Todo? deletedTodo;
   int? deletedTodoIndex;
@@ -24,7 +24,7 @@ class _TodoListPageState extends State<TodoListPage> {
     super.initState();
     todoRepository.getTodoList().then((List<Todo> value) {
       setState(() {
-        value = todos;
+        todos.addAll(value);
       });
     });
   }
@@ -50,15 +50,6 @@ class _TodoListPageState extends State<TodoListPage> {
                           labelText: 'Add a new ToDo',
                           hintText: 'Enter a ToDo',
                           errorText: errorText,
-                          labelStyle: const TextStyle(
-                            color: Color(0xFFFF0000),
-                          ),
-                          focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Color(0xFFFF0000),
-                              width: 2,
-                            ),
-                          ),
                         ),
                         onSubmitted: (String text) {
                           addTodo;
@@ -70,7 +61,6 @@ class _TodoListPageState extends State<TodoListPage> {
                       onPressed: addTodo,
                       style: ElevatedButton.styleFrom(
                         alignment: Alignment.center,
-                        backgroundColor: const Color(0xFFFF0000),
                         padding: const EdgeInsets.all(12),
                       ),
                       child: const Icon(
@@ -109,7 +99,6 @@ class _TodoListPageState extends State<TodoListPage> {
                     ElevatedButton(
                       onPressed: showDeleteTodosConfirmationDialog,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF0000),
                         padding: const EdgeInsets.all(16),
                       ),
                       child: const Text(
@@ -133,6 +122,7 @@ class _TodoListPageState extends State<TodoListPage> {
     setState(() {
       todos.remove(todo);
     });
+
     todoRepository.saveTodoList(todos);
 
     ScaffoldMessenger.of(context).clearSnackBars();
@@ -148,7 +138,6 @@ class _TodoListPageState extends State<TodoListPage> {
         ),
         action: SnackBarAction(
           label: 'Undo',
-          textColor: const Color(0xFFFF0000),
           onPressed: () {
             todos.insert(
               deletedTodoIndex as int,
@@ -207,17 +196,20 @@ class _TodoListPageState extends State<TodoListPage> {
     setState(() {
       todos.clear();
     });
+
     todoRepository.saveTodoList(todos);
   }
 
   void addTodo() {
     String text = todoController.text;
+
     if (text.isEmpty) {
       setState(() {
         errorText = 'Please enter a ToDo';
       });
       return;
     }
+
     setState(() {
       todos.add(
         Todo(
@@ -227,6 +219,7 @@ class _TodoListPageState extends State<TodoListPage> {
       );
       errorText = null;
     });
+
     todoController.clear();
     todoRepository.saveTodoList(todos);
   }
